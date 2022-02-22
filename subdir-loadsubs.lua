@@ -3,7 +3,7 @@ local utils = require 'mp.utils'
 
 local function get_sub_dirs()
     local sub_dirs_str = mp.get_property('sub-file-paths')
-    local cwd = utils.getcwd()
+    --local cwd = utils.getcwd()
     local paths = {}
 
     for path in string.gmatch(sub_dirs_str, "([^,]+)") do
@@ -27,9 +27,9 @@ local function load_subs_from_dir(dirpath)
     if contents ~= nil then
         for _, v in pairs(contents) do
             local filepath = utils.join_path(dirpath, v)
-            -- load subtitle files recursively
             local stats = utils.file_info(filepath)
             if stats.is_dir then
+                -- load subtitle files recursively
                 load_subs_from_dir(filepath)
             elseif stats.is_file and is_sub_file(filepath) then
                 print(filepath)
@@ -41,9 +41,17 @@ local function load_subs_from_dir(dirpath)
 end
 
 local function load_sub_files_from_subdirs()
-    local paths = get_sub_dirs()
-    for _, v in pairs(paths) do
-        load_subs_from_dir(v)
+    local sub_dirs = get_sub_dirs()
+    for _, sub_dir in pairs(sub_dirs) do
+        local contents = utils.readdir(sub_dir)
+        if contents then
+            for _, file in pairs(contents) do
+                local filepath = utils.join_path(sub_dir, file)
+                if utils.file_info(filepath).is_dir then
+                    load_subs_from_dir(filepath)
+                end
+            end
+        end
     end
 end
 
